@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block header %}
+    <div class="masthead clearfix">
+        <div class="inner">
+          <h5 class="masthead-brand">ECE1779-Assignment3</h5>
+          <nav>
+            <ul class="nav masthead-nav">
+              <li class="active"><a href="{{ url_for('main') }}">Home</a></li>
+            </ul>
+          </nav>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-3">
+             <form class="form" method="POST">
+                {{ form.hidden_tag() }}
+                <h2>Register Page</h2>
+                <br>
+                {{ form.username(placeholder="Username",class="form-control") }}
+                {{ form.password(placeholder="Password",class="form-control") }}
+                {{ form.confirm(placeholder="Repeat Password",class="form-control") }}
+                <br>
+                {{ form.submit(class="btn btn-lg btn-primary btn-block") }}
+             </form>
+
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        {% if form.errors %}
+            <ul class="errors">
+                {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+                    {% for error in field_errors %}
+                        <li>{{ form[field_name].label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+{% endblock %}

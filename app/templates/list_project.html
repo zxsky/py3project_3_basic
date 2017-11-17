@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block header %}
+    <div class="masthead clearfix">
+    <div class="inner">
+      <h5 class="masthead-brand">ECE1779-Assignment3 <b>{{session['username']}}</b>'s work related to <b>{{ project }}</b></h5>
+      <nav>
+        <ul class="nav masthead-nav">
+            <li class="active"><a href="{{ url_for('profile',username = session['username']) }}">Back to homepage</a></li>
+            <li class="active"><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+      </nav>
+    </div>
+    </div>
+{% endblock %}
+
+
+{% block content %}
+    <div class="row justify-content-center">
+        <form action="{{ url_for('deleteproject')}}">
+            <input
+            value="{{ project }}"
+           name='projectToDel'
+            readonly="readonly"
+            type="hidden"
+            >
+            <input type="submit" class="btn btn-lg btn-danger" value="Delete this project: {{ project }}"/>
+        </form>
+    </div>
+
+
+    <div class="row justify-content-center">
+    </div>
+
+
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+
+            {% for date in date_list %}
+
+            <form  action="{{ url_for('checkExist')}}" onSubmit="return checkEmpty(form)" name="form">
+            <label>Date:</label>&nbsp;&nbsp;
+            <input id="datepicker" type="text" name="dateChosen" readonly="readonly" value="{{ date }}"/>
+
+            <input
+           name='projectChosen'
+           value="{{ project }}"
+           readonly="readonly"
+           type="hidden"
+            />
+            <input type="submit" class="btn btn-sm btn-default" value="Edit/View" id="savebutton"/>
+            <br>
+            <br>
+            </form>
+
+
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

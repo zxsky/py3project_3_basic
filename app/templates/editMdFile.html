@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block header %}
+    <div class="masthead clearfix">
+    <div class="inner">
+      <h5 class="masthead-brand">ECE1779-Assignment3 <b>{{session['username']}}</b>'s work (editing)</h5>
+      <nav>
+        <ul class="nav masthead-nav">
+            <li class="active"><a href="{{ url_for('profile',username = session['username']) }}">Back to homepage</a></li>
+            <li class="active"><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+      </nav>
+    </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <form  action="{{ url_for('checkExist')}}" onSubmit="return checkEmpty(form)" name="form">
+            <label>Date:</label>&nbsp;&nbsp;
+            <input id="datepicker" type="text" name="dateChosen" readonly="readonly" value="{% if project_date %}{{ project_date }}{% endif %}"/>
+{#            <script type="text/javascript">#}
+{#            $(function(){#}
+{#                $( '#datepicker' ).datepicker();#}
+{#            });#}
+{#            </script>#}
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <label>Project Name:</label>&nbsp;&nbsp;
+            <input
+{#           class='flexdatalist'#}
+{#           data-min-length='0'#}
+{#           data-selection-required='true'#}
+{#           list='projects'#}
+           name='projectChosen'
+           value="{% if project_name %}{{ project_name }}{% endif %}"
+           type='text'
+{#           value="{% if project_list  %}{{ project_list[-1] }}{% endif %}"#}
+{#            onchange="this.form.submit()"#}
+            readonly="readonly"
+            />
+{#            <datalist id="projects">#}
+{#            {% if project_list   %}#}
+{#                {% for proj in project_list %}#}
+{#                    <option value={{ proj }}>{{ proj }}</option>#}
+{#                {% endfor %}#}
+{#            {% endif %}#}
+{#            </datalist>#}
+{#            <script type="text/javascript">#}
+{#                $('.flexdatalist').flexdatalist({#}
+{#                     selectionRequired: true,#}
+{#                     minLength: 0#}
+{#                });#}
+{#            </script>#}
+
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="submit" class="btn btn-sm btn-default" value="Save" id="savebutton"/>
+            <br>
+            <br>
+
+
+            <div id="editor">
+              <textarea :value="input" @input="update" name="textarea" rows="25" cols="80"
+              placeholder="You have not written anything yet on this yet. Type something..."></textarea>
+              <div v-html="compiledMarkdown"></div>
+            </div>
+
+            <script type="text/javascript">
+                new Vue({
+                  el: '#editor',
+                  data: {
+                    input: "{% if OLDtextarea %}{{ OLDtextarea }}{% endif %}"
+                  },
+                  computed: {
+                    compiledMarkdown: function () {
+                      return marked(this.input, { sanitize: true })
+                    }
+                  },
+                  methods: {
+                    update: _.debounce(function (e) {
+                      this.input = e.target.value
+                    }, 300)
+                  }
+                })
+            </script>
+        </form>
+    </div>
+
+
+    <div class="row justify-content-center">
+    </div>
+    <div class="row justify-content-center">
+    </div>
+    <div class="row justify-content-center">
+    </div>
+    <div class="row justify-content-center">
+    </div>
+    <div class="row justify-content-center">
+    </div>
+    <div class="row justify-content-center">
+    </div>
+
+    <script type="text/javascript">
+        function checkEmpty(form){
+            for(i=0;i<form.length;i++){
+                if(form.elements[i].value==""){
+                alert("You left something blank!");
+                return false;
+                }
+            }
+        }
+
+    </script>
+    <script type="text/javascript">
+    $('#savebutton').click(function() {
+        $('form').attr("action", "{{ url_for('savework')}}");  //change the form action
+        $('form').submit();  // submit the form
+    });
+    </script>
+{% endblock %}
