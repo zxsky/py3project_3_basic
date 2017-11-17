@@ -35,7 +35,7 @@
 
     <div class="row justify-content-center">
         <div class="col-md-12">
-
+        {% if date_list %}
             {% for date in date_list %}
 
             <form  action="{{ url_for('checkExist')}}" onSubmit="return checkEmpty(form)" name="form">
@@ -55,6 +55,9 @@
 
 
             {% endfor %}
+        {% else %}
+            <p class="lead">You have nothing here</p>
+        {% endif %}
         </div>
     </div>
 {% endblock %}

@@ -307,9 +307,9 @@ def viewproject():
         return redirect(url_for('profile', username=session['username']))
 
     date_list = get_date_list_accord_project(username, project_chosen)
-    if date_list == []:
-        flash("You have not written anything related to " + project_chosen +" project","warning")
-        return redirect(url_for('profile', username=session['username']))
+    # if date_list == []:
+    #     flash("You have not written anything related to " + project_chosen +" project","warning")
+    #     return redirect(url_for('profile', username=session['username']))
 
     return render_template("/list_project.html", project = project_chosen, date_list = date_list)
 
