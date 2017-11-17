@@ -1,3 +1,4 @@
+import time
 from flask import Flask, request, render_template, redirect, url_for, flash, g, session
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField
@@ -205,6 +206,7 @@ def register():
             flash("Register Success!", 'success')
             session['logged_in'] = True
             session['username'] = username
+            time.sleep(10)
             return redirect(url_for('profile', username=username))
     return render_template("/register_form.html", form=form)
 
