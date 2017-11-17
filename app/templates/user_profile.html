@@ -82,27 +82,45 @@
                     <h5 >View your MD docs:</h5>
                     <br>
                 <div class="input-group ">
-                    <input
-                   class='flexdatalist form-control'
-                   data-min-length='0'
-                   data-selection-required='true'
-                   list='dates'
-                   placeholder='Type to choose'
-                   name='dateChosen'
-                   type='text'/>
-                    <datalist id="dates">
-                    {% if date_list  %}
-                        {% for date in date_list %}
-                            <option value={{ date }}>{{ date }}</option>
-                        {% endfor %}
-                    {% endif %}
-                    </datalist>
+{#                    <input#}
+{#                   class='flexdatalist form-control'#}
+{#                   data-min-length='0'#}
+{#                   data-selection-required='true'#}
+{#                   list='dates'#}
+{#                   placeholder='Type to choose'#}
+{#                   name='dateChosen'#}
+{#                   type='text'/>#}
+{#                    <datalist id="dates">#}
+{#                    {% if date_list  %}#}
+{#                        {% for date in date_list %}#}
+{#                            <option value={{ date }}>{{ date }}</option>#}
+{#                        {% endfor %}#}
+{#                    {% endif %}#}
+{#                    </datalist>#}
+{#                    <script type="text/javascript">#}
+{#                        $('.flexdatalist').flexdatalist({#}
+{#                             selectionRequired: true,#}
+{#                             minLength: 0#}
+{#                        });#}
+{#                    </script>#}
+                    <input id="datepicker" type="text" name="dateChosen" class="form-control"/>
                     <script type="text/javascript">
-                        $('.flexdatalist').flexdatalist({
-                             selectionRequired: true,
-                             minLength: 0
-                        });
+                    var availableDates = {% if date_list  %}{{ date_list|safe }}{% endif %};
+                    function available(datepicker) {
+                      dmy = (datepicker.getMonth()+1)+ "/" + datepicker.getDate()  + "/" + datepicker.getFullYear();
+                      console.log(dmy+' : '+($.inArray(dmy, availableDates)));
+                      if ($.inArray(dmy, availableDates) != -1) {
+                        return [true, "","Available"];
+                      } else {
+                        return [false,"","unAvailable"];
+                      }
+                    }
+                    $(function(){
+{#                        $( '#datepicker' ).datepicker();#}
+                        $( ' #datepicker ').datepicker({ beforeShowDay: available });
+                    });
                     </script>
+
                     &nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" class="btn btn-md btn-default" value="&nbsp;&nbsp;by date&nbsp;&nbsp;"/>
                 </div>
                 </form>
@@ -110,11 +128,6 @@
 
             <div class="row justify-content-center">
                 <form action="{{ url_for('viewproject')}}">
-{#                    <select name="projectChosen" style="width: 200px">#}
-{#                        {% for proj in project_list %}#}
-{#                        <option value={{ proj }}>{{ proj }}</option>#}
-{#                        {% endfor %}#}
-{#                    </select>#}
                 <div class="input-group ">
                     <input
                    class='flexdatalist form-control'
