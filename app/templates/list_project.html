@@ -34,27 +34,26 @@
 
 
     <div class="row justify-content-center">
-        <div class="col-md-12">
+        <div class="col-md-4">
         {% if date_list %}
+            <ul class="list-group">
             {% for date in date_list %}
+            <li class="list-group-item">
+                <form  action="{{ url_for('checkExist')}}" onSubmit="return checkEmpty(form)" name="form">
+                <label>Date:</label>&nbsp;&nbsp;
+                <input id="datepicker" type="text" name="dateChosen" readonly="readonly" value="{{ date }}"/>
 
-            <form  action="{{ url_for('checkExist')}}" onSubmit="return checkEmpty(form)" name="form">
-            <label>Date:</label>&nbsp;&nbsp;
-            <input id="datepicker" type="text" name="dateChosen" readonly="readonly" value="{{ date }}"/>
-
-            <input
-           name='projectChosen'
-           value="{{ project }}"
-           readonly="readonly"
-           type="hidden"
-            />
-            <input type="submit" class="btn btn-sm btn-default" value="Edit/View" id="savebutton"/>
-            <br>
-            <br>
-            </form>
-
-
+                <input
+               name='projectChosen'
+               value="{{ project }}"
+               readonly="readonly"
+               type="hidden"
+                />&nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="submit" class="btn btn-sm btn-default" value="Edit" id="savebutton"/>
+                </form>
+            </li>
             {% endfor %}
+            </ul>
         {% else %}
             <p class="lead">You have nothing here</p>
         {% endif %}

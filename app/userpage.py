@@ -144,46 +144,48 @@ def profile(username):
                                date_list=date_whole_list, project_list = project_whole_list)
 
 
-@webapp.route('/edit', methods=['GET', 'POST'])
-@login_required
-def edit():
-    username = session['username']
-    project_list = get_project_list(username)
-    return render_template("/editMdFile.html", project_list = project_list)
+# @webapp.route('/edit', methods=['GET', 'POST'])
+# @login_required
+# def edit():
+#     username = session['username']
+#     project_list = get_project_list(username)
+#     return render_template("/editMdFile.html", project_list = project_list)
 
 
-@webapp.route('/choose_before_editing', methods=['GET', 'POST'])
-@login_required
-def choose_before_editing():
-    username = session['username']
-    # date_chosen = request.args.get('dateChosen').replace('/', '_')
-    # project_chosen = request.args.get('projectChosen')
-    project_list = get_project_list(username)
-    if project_list == []:
-        flash("You don't have any project yet, create one first!", "warning")
-        return redirect(url_for('profile', username=username))
-    return render_template("/editMdFile_choose.html", project_list = project_list)
+# @webapp.route('/choose_before_editing', methods=['GET', 'POST'])
+# @login_required
+# def choose_before_editing():
+#     username = session['username']
+#     project_list = get_project_list(username)
+#     if project_list == []:
+#         flash("You don't have any project yet, create one first!", "warning")
+#         return redirect(url_for('profile', username=username))
+#     return render_template("/editMdFile_choose.html", project_list = project_list)
 
 
 @webapp.route('/editFile', methods=['GET', 'POST'])
 @login_required
 def checkExist():
+    username = session['username']
+    project_list = get_project_list(username)
+    if project_list == []:
+        flash("You don't have any project yet, create one first!", "warning")
+        return redirect(url_for('profile', username=username))
+
+    #get user input
     date_chosen = request.args.get('dateChosen')
     project_chosen = request.args.get('projectChosen')
     #TODO: check these two names with functions
 
     #refresh the page if no data sent
     if date_chosen == "" or project_chosen == "":
-        return redirect(url_for('choose_before_editing'))
-
-    #get the user name
-    username = session['username']
-    project_list = get_project_list(username)
+        flash("Please choose the date and name first", "warning")
+        return redirect(url_for('profile', username=username))
 
     #check if user typed the wrong project intentionally
     #todo
     if project_chosen not in project_list:
-        return "error!"
+        return render_template("404_error.html")
 
     #check if file already exists by reading data from DB
     table = dynamodb.Table(username + "_files")
@@ -201,16 +203,16 @@ def checkExist():
         lines = [line for line in textareaOns3.split('\r\n')]
         textareaOns3 = "\\n".join(lines)
         # date_chosen.replace('_','/')
-        flash("We have retrieved your history content.", "success")
-        return render_template("/editMdFile.html", project_list = project_list, OLDtextarea = textareaOns3, project_name = project_chosen, project_date = date_chosen)
+        flash("Your history content has been retrieved.", "success")
+        return render_template("/editMdFile.html", OLDtextarea = textareaOns3, project_name = project_chosen, project_date = date_chosen)
     else:
         #file do not exist, check textarea is not null
         # textarea = request.args.get('textarea')
         # if textarea == "":
         # date_chosen.replace('_', '\/')
         # print(date_chosen)
-        flash("We have no record. Start editing!", "success")
-        return render_template("/editMdFile.html", project_list=project_list, project_name=project_chosen,  project_date = date_chosen)
+        flash("No record. Start editing!", "success")
+        return render_template("/editMdFile.html", project_name=project_chosen,  project_date = date_chosen)
 
 
 @webapp.route('/savework', methods=['GET', 'POST'])
@@ -289,6 +291,9 @@ def viewdate():
     if date_chosen == "":
         return redirect(url_for('profile', username=session['username']))
 
+    if date_chosen not in get_date_list(username):
+        return redirect(url_for('profile', username=session['username']))
+
     project_list = get_project_list_accord_date(username, date_chosen)
     if project_list == []:
         flash("You have not written anything on " + date_chosen, "warning")
@@ -304,6 +309,9 @@ def viewproject():
     username = session['username']
 
     if project_chosen == "":
+        return redirect(url_for('profile', username=session['username']))
+
+    if project_chosen not in get_project_list(username):
         return redirect(url_for('profile', username=session['username']))
 
     date_list = get_date_list_accord_project(username, project_chosen)
@@ -327,6 +335,9 @@ def viewproject():
 def addproject():
     project_chosen = request.args.get('newProjectName')
     username = session['username']
+    if project_chosen == "":
+        flash("Please enter a valid new project name!", "warning")
+        return redirect(url_for('profile', username=username))
 
     #check if projectname exists
     table = dynamodb.Table('users')
@@ -377,7 +388,7 @@ def deleteproject():
 
     if project_chosen == "":
         flash("Please select one first before delete project", "warning")
-        redirect(url_for('profile', username=username))
+        return redirect(url_for('profile', username=username))
 
     #remvoe db project record
     date_list = get_date_list_accord_project(username, project_chosen)
@@ -404,7 +415,7 @@ def deleteproject():
     if delete_keys['Objects'] != [] :
         s3.meta.client.delete_objects(Bucket="mybucket4test", Delete=delete_keys)
 
-    #get original list
+    # get original list
     project_list = get_project_list(username)
     #remove the item
     project_list.remove(project_chosen)

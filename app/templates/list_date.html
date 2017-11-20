@@ -16,10 +16,11 @@
 
 {% block content %}
     <div class="row justify-content-center">
-        <div class="col-md-12">
+        <div class="col-md-5">
 {#        {% if project_list %}#}
+            <ul class="list-group">
             {% for project in project_list %}
-
+            <li class="list-group-item">
             <form  action="{{ url_for('checkExist')}}" onSubmit="return checkEmpty(form)" name="form">
 
             <input id="datepicker" name="dateChosen" readonly="readonly" type="hidden" value="{{ date }}"/>
@@ -29,13 +30,12 @@
            value="{{ project }}"
            type='text'
            readonly="readonly"
-            />
-            <input type="submit" class="btn btn-sm btn-default" value="Edit/View" id="savebutton"/>
-            <br>
-            <br>
+            />&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="submit" class="btn btn-sm btn-default" value="Edit" id="savebutton"/>
             </form>
-
+            </li>
             {% endfor %}
+            </ul>
 {#        {% else %}#}
 {#            <p class="lead">You have nothing here</p>#}
 {#        {% endif %}#}

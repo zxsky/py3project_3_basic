@@ -2,35 +2,30 @@
 
 {% block header %}
     <div class="masthead clearfix" >
-    <div class="inner">
-      <h5 class="masthead-brand">ECE1779-Assignment3 <b>{{session['username']}}</b>'s Homepage</h5>
-      <nav>
-        <ul class="nav masthead-nav">
-          <li class="active"><a href="{{ url_for('logout') }}">Logout</a></li>
-
-        </ul>
-      </nav>
-    </div>
+        <div class="inner">
+        <h5 class="masthead-brand">ECE1779-Assignment3 <b>{{session['username']}}</b>'s Homepage</h5>
+        <nav>
+            <ul class="nav masthead-nav">
+                <li class="active"><a href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </nav>
+        </div>
     </div>
 {% endblock %}
 
 {% block content %}
     <div class="row justify-content-center">
         <div class="col-md-8">
-
-            <br>
             <p class="lead">Your work
-            {% if project_chosen %}<b><i> on {{ project_chosen }}</i></b>{% endif %}
+            {% if project_chosen %} on <b><i>{{ project_chosen }}</i></b>{% endif %}
             {% if date_chosen %}<b><i>, {{ date_chosen }}</i></b>{% endif %}
             :</p>
             <div class="row justify-content-center" >
-
                 <div id="editor">
-                  <textarea :value="input" @input="update" name="textarea" rows="25" cols="70"
-                  placeholder="You have not written anything on this project"></textarea>
-                  <div v-html="compiledMarkdown"></div>
+                    <textarea :value="input" @input="update" name="textarea" rows="25" cols="70"
+                    placeholder="You have not written anything yet." ></textarea>
+                    <div v-html="compiledMarkdown"></div>
                 </div>
-
                 <script type="text/javascript">
                     new Vue({
                       el: '#editor',
@@ -49,65 +44,114 @@
                       }
                     })
                 </script>
-
             </div>
         </div>
-
-
-
         <div class="col-md-4">
-
             <div class="row justify-content-center">
-                <form action="{{ url_for('addproject')}}">
-                    <br><br><br><br>
-                    <h5 >Create new project name:</h5>
-                    <br>
-                    <div class="input-group ">
-                    <input type="text" name="newProjectName" class="form-control" style="width: 200px"/>
-                        &nbsp;&nbsp;&nbsp;&nbsp;
-                    <input type="submit" class="btn btn-md btn-default" value="&nbsp;&nbsp;Create&nbsp;&nbsp;"/>
-                    </div>
-                    <br><br><br><br>
-                </form>
             </div>
-
             <div class="row justify-content-center">
-                <p><a class="btn btn-lg btn-default" href="{{ url_for('choose_before_editing') }}" role="button">
-                    &nbsp;&nbsp;&nbsp;&nbsp;START&nbsp;&nbsp;NEW&nbsp;&nbsp;DOC&nbsp;&nbsp;&nbsp;&nbsp;</a></p>
+            </div>
+            <div class="row justify-content-center">
+                <button type="button" class="btn btn-default btn-lg" data-toggle="modal" data-target="#createProjModal">
+                    Create New Project
+                </button>
+                <div class="modal fade" id="createProjModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Create New Project:</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            </div>
+                        <form action="{{ url_for('addproject')}}">
+                            <div class="modal-body">
+                                <input type="text" name="newProjectName" class="form-control"/>
+                            </div>
+                            <div class="modal-footer">
+                            <button type="button" class="btn btn-md btn-secondary" data-dismiss="modal">Cancel</button>
+                                <input type="submit" class="btn btn-md btn-default" value="Create"/>
+                            </div>
+                        </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+            </div>
+            <div class="row justify-content-center">
+{#                <p><a class="btn btn-lg btn-default" href="{{ url_for('choose_before_editing') }}" role="button">#}
+{#                    &nbsp;&nbsp;&nbsp;&nbsp;START&nbsp;&nbsp;NEW&nbsp;&nbsp;DOC&nbsp;&nbsp;&nbsp;&nbsp;</a></p>#}
+
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-default btn-lg" data-toggle="modal" data-target="#exampleModal">
+                    Edit Markdown Doc
+                </button>
+
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Choose the date and name:</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            </div>
+                        <form action="{{ url_for('checkExist')}}" name="form">
+                            <div class="modal-body">
+                                <label>Project Date:</label>
+                                <input id="datepicker" type="text" name="dateChosen" class="form-control"/>
+                                <script type="text/javascript">
+                                $(function(){
+                                    $( '#datepicker' ).datepicker();
+                                });
+                                </script>
+                                <br>
+                                <label>Project Name:</label>
+                                <input
+                                    class='flexdatalist form-control'
+                                    data-min-length='0'
+                                    data-selection-required='true'
+                                    list='projects'
+                                    placeholder='Type to choose'
+                                    name='projectChosen'
+                                    value="{% if project_name %}{{ project_name }}{% endif %}"
+                                    type='text'
+                                />
+                                <datalist id="projects">
+                                    {% if project_list   %}
+                                        {% for proj in project_list %}
+                                            <option value={{ proj }}>{{ proj }}</option>
+                                        {% endfor %}
+                                    {% endif %}
+                                </datalist>
+                                <script type="text/javascript">
+                                    $('.flexdatalist').flexdatalist({
+                                         selectionRequired: true,
+                                         minLength: 0
+                                    });
+                                </script>
+                              </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-md btn-secondary" data-dismiss="modal">Cancel</button>
+                                  <input type="submit" class="btn btn-md btn-default" value="Edit" id="savebutton"/>
+                            </div>
+                        </form>
+                        </div>
+                    </div>
+                </div>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+                <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
             </div>
 
             <div class="row justify-content-center">
                 <form action="{{ url_for('viewdate')}}">
-                    <br><br><br>
+                    <br><br><br><br><br><br>
                     <h5 >View your MD docs:</h5>
                     <br>
                 <div class="input-group ">
-{#                    <input#}
-{#                   class='flexdatalist form-control'#}
-{#                   data-min-length='0'#}
-{#                   data-selection-required='true'#}
-{#                   list='dates'#}
-{#                   placeholder='Type to choose'#}
-{#                   name='dateChosen'#}
-{#                   type='text'/>#}
-{#                    <datalist id="dates">#}
-{#                    {% if date_list  %}#}
-{#                        {% for date in date_list %}#}
-{#                            <option value={{ date }}>{{ date }}</option>#}
-{#                        {% endfor %}#}
-{#                    {% endif %}#}
-{#                    </datalist>#}
-{#                    <script type="text/javascript">#}
-{#                        $('.flexdatalist').flexdatalist({#}
-{#                             selectionRequired: true,#}
-{#                             minLength: 0#}
-{#                        });#}
-{#                    </script>#}
-                    <input id="datepicker" type="text" name="dateChosen" class="form-control"/>
+                    <input id="datepicker2" type="text" name="dateChosen" class="form-control"/>
                     <script type="text/javascript">
                     var availableDates = {% if date_list  %}{{ date_list|safe }}{% endif %};
-                    function available(datepicker) {
-                      dmy = (datepicker.getMonth()+1)+ "/" + datepicker.getDate()  + "/" + datepicker.getFullYear();
+                    function available(datepicker2) {
+                      dmy = (datepicker2.getMonth()+1)+ "/" + datepicker2.getDate()  + "/" + datepicker2.getFullYear();
                       console.log(dmy+' : '+($.inArray(dmy, availableDates)));
                       if ($.inArray(dmy, availableDates) != -1) {
                         return [true, "","Available"];
@@ -117,7 +161,7 @@
                     }
                     $(function(){
 {#                        $( '#datepicker' ).datepicker();#}
-                        $( ' #datepicker ').datepicker({ beforeShowDay: available });
+                        $( ' #datepicker2 ').datepicker({ beforeShowDay: available });
                     });
                     </script>
 

@@ -206,8 +206,8 @@ def register():
             flash("Register Success!", 'success')
             session['logged_in'] = True
             session['username'] = username
-            time.sleep(10)
-            return redirect(url_for('profile', username=username))
+
+            return render_template("/user_profile.html", username=username)
     return render_template("/register_form.html", form=form)
 
 @webapp.errorhandler(404)
