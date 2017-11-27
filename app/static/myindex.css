@@ -64,7 +64,7 @@ body {
 }
 body {
   color: #000000;
-  text-align: center;
+  /*text-align: center;*/
   /*text-shadow: 1px 1px 1px #000000;*/
 }
 
@@ -149,6 +149,7 @@ body {
 
 .cover {
   padding: 0 20px;
+  text-align: center;
 }
 .cover .btn-lg {
   padding: 10px 20px;
@@ -163,7 +164,7 @@ body {
 .mastfoot {
   color: #000000; /* IE8 proofing */
   /*color: rgba(255,255,255,.5);*/
-
+  text-align: center;
 }
 
 
@@ -218,7 +219,7 @@ textarea, #editor div {
   height: 100%;
   vertical-align: top;
   box-sizing: border-box;
-  padding: 0 20px;
+  /*padding: 0 20px;*/
 }
 
 textarea {
@@ -229,7 +230,7 @@ textarea {
   background-color: #eeeeee;
   font-size: 16px;
   font-family: 'Monaco', courier, monospace;
-  padding: 20px;
+  /*padding: 20px;*/
 }
 
 code {

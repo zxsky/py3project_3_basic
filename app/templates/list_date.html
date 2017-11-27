@@ -19,7 +19,7 @@
         <div class="col-md-5">
 {#        {% if project_list %}#}
             <ul class="list-group">
-            {% for project in project_list %}
+            {% for i in range(project_list|length) %}
             <li class="list-group-item">
             <form  action="{{ url_for('checkExist')}}" onSubmit="return checkEmpty(form)" name="form">
 
@@ -27,12 +27,21 @@
                 <label>Project Name:</label>&nbsp;&nbsp;
             <input
            name='projectChosen'
-           value="{{ project }}"
+           value="{{ project_list[i] }}"
            type='text'
            readonly="readonly"
             />&nbsp;&nbsp;&nbsp;&nbsp;
+                <a class="btn btn-sm btn-default" data-toggle="collapse" href="#collapseExample{{ i }}" aria-expanded="false" aria-controls="collapseExample">Preview</a>
+                &nbsp;&nbsp;&nbsp;&nbsp;
             <input type="submit" class="btn btn-sm btn-default" value="Edit" id="savebutton"/>
             </form>
+
+            <div class="collapse" id="collapseExample{{ i }}">
+                  <div class="card card-body">
+                            <textarea readonly style="width: 100%;">{{ content_list[i] }}</textarea>
+                  </div>
+                </div>
+
             </li>
             {% endfor %}
             </ul>

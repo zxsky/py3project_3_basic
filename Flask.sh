@@ -2,20 +2,20 @@
 # In the root of you project
 # virtualenv flask
 
-flask/bin/pip3 install flask
-flask/bin/pip3 install flask-login
-flask/bin/pip3 install flask-openid
-flask/bin/pip3 install flask-mail
-flask/bin/pip3 install flask-sqlalchemy
-flask/bin/pip3 install sqlalchemy-migrate
-flask/bin/pip3 install flask-whooshalchemy
-flask/bin/pip3 install flask-wtf
-flask/bin/pip3 install flask-babel
-flask/bin/pip3 install guess_language
-flask/bin/pip3 install flipflop
-flask/bin/pip3 install coverage
-flask/bin/pip3 install flask_bcrypt
-flask/bin/pip3 install pymysql
-flask/bin/pip3 install botocore
-flask/bin/pip3 install boto3
-flask/bin/pip3 install wand
+flask/bin/pip install flask
+flask/bin/pip install flask-login
+flask/bin/pip install flask-openid
+flask/bin/pip install flask-mail
+flask/bin/pip install flask-sqlalchemy
+flask/bin/pip install sqlalchemy-migrate
+flask/bin/pip install flask-whooshalchemy
+flask/bin/pip install flask-wtf
+flask/bin/pip install flask-babel
+flask/bin/pip install guess_language
+flask/bin/pip install flipflop
+flask/bin/pip install coverage
+flask/bin/pip install flask_bcrypt
+flask/bin/pip install pymysql
+flask/bin/pip install botocore
+flask/bin/pip install boto3
+flask/bin/pip install wand

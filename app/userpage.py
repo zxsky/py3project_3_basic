@@ -299,7 +299,24 @@ def viewdate():
         flash("You have not written anything on " + date_chosen, "warning")
         return redirect(url_for('profile', username=session['username']))
 
-    return render_template("/list_date.html", date = date_chosen, project_list = project_list)
+    content_list = []
+    for project_chosen in project_list:
+        table = dynamodb.Table(username + "_files")
+        response = table.query(
+            KeyConditionExpression=Key('user_date').eq(date_chosen) & Key('user_project').eq(project_chosen)
+        )
+        records = []
+        for i in response['Items']:
+            records.append(i)
+        if records:
+            # retrive the textarea since file do exist
+            s3 = boto3.resource('s3')
+            obj = s3.Object('mybucket4test', username + "/" + project_chosen + "/" + records[0]['project_filename'])
+            textareaOns3 = obj.get()['Body'].read().decode('utf-8')
+            content_list.append(textareaOns3)
+
+
+    return render_template("/list_date.html", date = date_chosen, project_list = project_list, content_list = content_list)
 
 
 @webapp.route('/viewproject', methods=['GET', 'POST'])
@@ -318,8 +335,23 @@ def viewproject():
     # if date_list == []:
     #     flash("You have not written anything related to " + project_chosen +" project","warning")
     #     return redirect(url_for('profile', username=session['username']))
+    content_list = []
+    for date_chosen in date_list:
+        table = dynamodb.Table(username + "_files")
+        response = table.query(
+            KeyConditionExpression=Key('user_date').eq(date_chosen) & Key('user_project').eq(project_chosen)
+        )
+        records = []
+        for i in response['Items']:
+            records.append(i)
+        if records:
+            # retrive the textarea since file do exist
+            s3 = boto3.resource('s3')
+            obj = s3.Object('mybucket4test', username + "/" + project_chosen + "/" + records[0]['project_filename'])
+            textareaOns3 = obj.get()['Body'].read().decode('utf-8')
+            content_list.append(textareaOns3)
 
-    return render_template("/list_project.html", project = project_chosen, date_list = date_list)
+    return render_template("/list_project.html", project = project_chosen, date_list = date_list, content_list = content_list)
 
 
 # @webapp.route('/updatework', methods=['GET', 'POST'])

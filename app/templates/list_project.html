@@ -34,23 +34,31 @@
 
 
     <div class="row justify-content-center">
-        <div class="col-md-4">
+        <div class="col-md-5">
         {% if date_list %}
             <ul class="list-group">
-            {% for date in date_list %}
-            <li class="list-group-item">
+            {% for i in range(date_list|length) %}
+            <li class="list-group-item" >
                 <form  action="{{ url_for('checkExist')}}" onSubmit="return checkEmpty(form)" name="form">
                 <label>Date:</label>&nbsp;&nbsp;
-                <input id="datepicker" type="text" name="dateChosen" readonly="readonly" value="{{ date }}"/>
-
+                <input id="datepicker" type="text" name="dateChosen" readonly="readonly" value="{{ date_list[i] }}"/>
                 <input
                name='projectChosen'
                value="{{ project }}"
                readonly="readonly"
                type="hidden"
                 />&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a class="btn btn-sm btn-default" data-toggle="collapse" href="#collapseExample{{ i }}" aria-expanded="false" aria-controls="collapseExample">Preview</a>
+                &nbsp;&nbsp;&nbsp;&nbsp;
                 <input type="submit" class="btn btn-sm btn-default" value="Edit" id="savebutton"/>
                 </form>
+
+            <div class="collapse" id="collapseExample{{ i }}">
+                  <div class="card card-body">
+                            <textarea readonly style="width: 100%;">{{ content_list[i] }}</textarea>
+                  </div>
+                </div>
+
             </li>
             {% endfor %}
             </ul>
