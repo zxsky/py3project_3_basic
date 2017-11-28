@@ -1,0 +1,15 @@
+{
+    "dev": {
+       "project_name": "py3project3LOCAL",
+       "keep_warm": false,
+       "debug": false,
+       "log_level": "DEBUG",
+       "s3_bucket": "mybucket4test",
+       "app_function": "app.webapp",
+       "http_methods": ["GET","POST"],
+       "parameter_depth": 1,
+       "timeout_seconds": 300,
+       "memory_size": 128,
+       "use_precompiled_packages": true
+    }
+}

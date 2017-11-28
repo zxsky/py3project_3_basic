@@ -64,8 +64,9 @@ body {
 }
 body {
   color: #000000;
-  /*text-align: center;*/
-  /*text-shadow: 1px 1px 1px #000000;*/
+  background-image: url("http://ami-2016.github.io/StSt/images/background.jpg");
+  text-align: center;
+  text-shadow: 2px 2px 2px #ffffff;
 }
 
 /* Extra markup and styles for table-esque vertical and horizontal centering */
@@ -149,7 +150,6 @@ body {
 
 .cover {
   padding: 0 20px;
-  text-align: center;
 }
 .cover .btn-lg {
   padding: 10px 20px;
@@ -209,7 +209,7 @@ body {
   height: 100%;
   font-family: 'Helvetica Neue', Arial, sans-serif;
   color: #000000;
-  background-color: #eeeeee;
+  background-color: #e1e1e1;
   /*border: 2px solid;*/
 }
 
@@ -219,6 +219,7 @@ textarea, #editor div {
   height: 100%;
   vertical-align: top;
   box-sizing: border-box;
+  text-align: left;
   /*padding: 0 20px;*/
 }
 
@@ -227,7 +228,7 @@ textarea {
   border-right: 1px solid #ccc;
   resize: none;
   outline: none;
-  background-color: #eeeeee;
+  background-color: #e1e1e1;
   font-size: 16px;
   font-family: 'Monaco', courier, monospace;
   /*padding: 20px;*/
