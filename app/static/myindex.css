@@ -64,8 +64,9 @@ body {
 }
 body {
   color: #000000;
-  background-image: url("http://ami-2016.github.io/StSt/images/background.jpg");
-  text-align: center;
+  background-image: url("http://sf.co.ua/13/08/wallpaper-3026364.jpg");
+  background-repeat: repeat;
+  /*text-align: center;*/
   text-shadow: 2px 2px 2px #ffffff;
 }
 

@@ -15,6 +15,14 @@
 {% endblock %}
 
 {% block content %}
+ <STYLE type="text/css">
+textarea {
+    text-align: left;
+}
+.CodeMirror, .CodeMirror-scroll {
+	min-height: 400px;
+}
+ </STYLE>
     <div class="row justify-content-center">
         <form  action="{{ url_for('checkExist')}}" onSubmit="return checkEmpty(form)" name="form">
             <label>Date:</label>&nbsp;&nbsp;
@@ -58,30 +66,15 @@
             <br>
             <br>
 
-
-            <div id="editor">
-              <textarea :value="input" @input="update" name="textarea" rows="25" cols="80"
-              placeholder="You have not written anything yet on this yet. Type something..."></textarea>
-              <div v-html="compiledMarkdown"></div>
-            </div>
-
-            <script type="text/javascript">
-                new Vue({
-                  el: '#editor',
-                  data: {
-                    input: "{% if OLDtextarea %}{{ OLDtextarea }}{% endif %}"
-                  },
-                  computed: {
-                    compiledMarkdown: function () {
-                      return marked(this.input, { sanitize: true })
-                    }
-                  },
-                  methods: {
-                    update: _.debounce(function (e) {
-                      this.input = e.target.value
-                    }, 300)
-                  }
-                })
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+            <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+            <textarea id="demo1" name="textarea" ></textarea>
+            <script>
+                var simplemde = new SimpleMDE({
+                    element: document.getElementById("demo1"),
+                    spellChecker: false,
+                    initialValue: "{% if OLDtextarea %}{{ OLDtextarea }}{% endif %}",
+                });
             </script>
         </form>
     </div>

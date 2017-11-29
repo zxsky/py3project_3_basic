@@ -21,28 +21,18 @@
             {% if date_chosen %}<b><i>, {{ date_chosen }}</i></b>{% endif %}
             :</p>
             <div class="row justify-content-center" >
-                <div id="editor">
-                    <textarea :value="input" @input="update" name="textarea" rows="25" cols="70"
-                    placeholder="You have not written anything yet." ></textarea>
-                    <div v-html="compiledMarkdown"></div>
-                </div>
-                <script type="text/javascript">
-                    new Vue({
-                      el: '#editor',
-                      data: {
-                        input: "{% if OLDtextarea %}{{ OLDtextarea }}{% endif %}"
-                      },
-                      computed: {
-                        compiledMarkdown: function () {
-                          return marked(this.input, { sanitize: true })
-                        }
-                      },
-                      methods: {
-                        update: _.debounce(function (e) {
-                          this.input = e.target.value
-                        }, 300)
-                      }
-                    })
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+                <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+                <textarea id="demo1" name="textarea" ></textarea>
+                <script>
+                    const simplemde = new SimpleMDE({
+                        element: document.getElementById("demo1"),
+                        spellChecker: false,
+                        initialValue: "{% if OLDtextarea %}{{ OLDtextarea }}{% endif %}",
+                        toolbar: false,
+                        status: false
+                    });
+                    simplemde.togglePreview();
                 </script>
             </div>
         </div>
