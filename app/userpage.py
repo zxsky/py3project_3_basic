@@ -224,14 +224,14 @@ def savework():
 
     username = session['username']
     #textarea is not null, which means this is a new file which should be put in DB and S3.
-    temp_1st_path = 'static/tmp_userfile/' + username
-    temp_2nd_path_toDel = os.path.join(ROOT_PATH, temp_1st_path)
+    # temp_1st_path = 'static/tmp_userfile/' + username
+    # temp_2nd_path_toDel = os.path.join(ROOT_PATH, temp_1st_path)
     try:
         # create file path
-        if not os.path.isdir(os.path.join(ROOT_PATH, 'static/tmp_userfile/')):
-            os.mkdir(os.path.join(ROOT_PATH, 'static/tmp_userfile/'))
-        if not os.path.isdir(temp_2nd_path_toDel):
-            os.mkdir(temp_2nd_path_toDel)
+        # if not os.path.isdir(os.path.join(ROOT_PATH, 'static/tmp_userfile/')):
+        #     os.mkdir(os.path.join(ROOT_PATH, 'static/tmp_userfile/'))
+        # if not os.path.isdir(temp_2nd_path_toDel):
+        #     os.mkdir(temp_2nd_path_toDel)
 
         #get file name
         table = dynamodb.Table(username + "_files")
@@ -246,18 +246,22 @@ def savework():
         else:
             filename = username + str(random_num()) + '.md'
 
-        #set local temp path
-        temp_file_with_path = "/".join([temp_2nd_path_toDel, filename])
-
-        # save file in local
-        with open(temp_file_with_path, 'w') as outfile:
-            package = request.args.get('textarea')
-            outfile.write(package)
-            outfile.close()
+        # #set local temp path
+        # temp_file_with_path = "/".join([temp_2nd_path_toDel, filename])
+        #
+        # # save file in local
+        # with open(temp_file_with_path, 'w') as outfile:
+        #     package = request.args.get('textarea')
+        #     outfile.write(package)
+        #     outfile.close()
 
         # save file to s3
-        s3_client = boto3.client('s3')
-        s3_client.upload_file(temp_file_with_path, 'mybucket4test', username+"/"+project_chosen+"/"+filename)
+        filepath = username+"/"+project_chosen+"/"+filename
+        content_body = request.args.get('textarea')
+        s3_resource = boto3.resource('s3')
+        s3 = s3_resource.Bucket("mybucket4test")
+        s3.put_object(Key=filepath, Body=content_body)
+        # s3_client.upload_file(temp_file_with_path, 'mybucket4test', username+"/"+project_chosen+"/"+filename)
 
         # save database
         table = dynamodb.Table(username + "_files")
@@ -270,14 +274,14 @@ def savework():
         )
 
         # delete tmp file
-        shutil.rmtree(temp_2nd_path_toDel)
+        # shutil.rmtree(temp_2nd_path_toDel)
 
         flash("Your MarkDown file has been saved successfully", "success")
         return redirect(url_for('profile', username=username))
 
     except Exception as e:
-        if os.path.isdir(temp_2nd_path_toDel):
-            shutil.rmtree(temp_2nd_path_toDel)
+        # if os.path.isdir(temp_2nd_path_toDel):
+        #     shutil.rmtree(temp_2nd_path_toDel)
         return str(e)
 
 
