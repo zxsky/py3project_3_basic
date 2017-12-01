@@ -8,6 +8,7 @@ from app.userpage import get_date_list, get_project_list, \
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 import re
+from datetime import datetime
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 
@@ -44,6 +45,21 @@ def get_all_users():
     for i in range(response['Count']):
         all_users.append(item[i]['username'])
     return all_users
+
+def get_comments(projectname, username):
+    fe = Key('comment_project').eq(projectname)
+    pe = "#dt, comment_time, comment_content, comment_user"
+    ean = {"#dt": "comment_project", }
+    table = dynamodb.Table(username + "_comments")
+    response = table.scan(
+        FilterExpression=fe,
+        ProjectionExpression=pe,
+        ExpressionAttributeNames=ean
+    )
+    records = []
+    for i in response['Items']:
+        records.append(i)
+    return records
 
 
 @webapp.route('/shareproject', methods=['GET', 'POST'])
@@ -86,9 +102,10 @@ def shareproject():
         share_flag, date_list, content_list = get_parameters_when_view_project_page(username, project_chosen)
 
         flash("You shared this project \"" + project_chosen +"\"", "success")
-        return render_template("/list_project.html", project=project_chosen, date_list=date_list,
-                               content_list=content_list,
-                               share_flag= True)
+        return redirect(url_for('viewproject') + "?projectChosen=" + project_chosen)
+        # return render_template("/list_project.html", project=project_chosen, date_list=date_list,
+        #                        content_list=content_list,
+        #                        share_flag= True)
 
 @webapp.route('/donotshareproject', methods=['GET', 'POST'])
 @login_required
@@ -129,9 +146,10 @@ def donotshareproject():
         share_flag, date_list, content_list = get_parameters_when_view_project_page(username, project_chosen)
 
         flash("You make the project \"" + project_chosen +"\"private now", "success")
-        return render_template("/list_project.html", project=project_chosen, date_list=date_list,
-                               content_list=content_list,
-                               share_flag=False)
+        # return render_template("/list_project.html", project=project_chosen, date_list=date_list,
+        #                        content_list=content_list,
+        #                        share_flag=False)
+        return redirect(url_for('viewproject') + "?projectChosen=" + project_chosen)
 
 @webapp.route('/searchProject', methods=['GET', 'POST'])
 @login_required
@@ -175,4 +193,39 @@ def viewprojects_notowner():
 
     share_flag, date_list, content_list = get_parameters_when_view_project_page(other_username, other_project)
 
-    return render_template("/list_project_notowner.html", project=other_project, date_list=date_list, content_list=content_list, otherusername = other_username)
+    comment_list = get_comments(other_project, other_username)
+
+    return render_template("/list_project_notowner.html", project=other_project, date_list=date_list,
+                           content_list=content_list, otherusername = other_username, comment_list = comment_list)
+
+
+@webapp.route('/addComment', methods=['GET', 'POST'])
+@login_required
+def addComment():
+    comment_content = request.args.get('newComment')
+    other_username = request.args.get('otheruser')
+    other_project = request.args.get('otherproject')
+    username = session['username']
+
+    # comment_list = get_comments(other_project, other_username)
+    # print(comment_list)
+    # return
+
+    # comment_time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+    comment_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
+
+    table = dynamodb.Table(other_username + "_comments")
+    response = table.put_item(
+        Item={
+            'comment_project': other_project,
+            'comment_time': comment_time,
+            'comment_content' : comment_content,
+            'comment_user' : username
+        }
+    )
+
+    # share_flag, date_list, content_list = get_parameters_when_view_project_page(other_username, other_project)
+    #
+    # comment_list = get_comments(other_project, other_username)
+
+    return redirect( url_for('viewprojects_notowner') + "?otheruser=" + other_username + "&otherproject=" +other_project)

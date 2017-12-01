@@ -15,9 +15,19 @@
 {% endblock %}
 
 {% block content %}
+<STYLE type="text/css">
+ body {
+     text-align: center;
+ }
+.h-scroll {
+    height: 60vh; /* %-height of the viewport */
+    overflow-y: scroll;
+}
+ </STYLE>
     <div class="row justify-content-center">
-        <div class="col-md-5">
+        <div class="col-md-6">
 {#        {% if project_list %}#}
+            <div class="h-scroll">
             <ul class="list-group">
             {% for i in range(project_list|length) %}
             <li class="list-group-item">
@@ -45,6 +55,7 @@
             </li>
             {% endfor %}
             </ul>
+            </div>
 {#        {% else %}#}
 {#            <p class="lead">You have nothing here</p>#}
 {#        {% endif %}#}

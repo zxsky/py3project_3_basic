@@ -95,11 +95,10 @@ textarea {
 
     <script type="text/javascript">
         function checkEmpty(form){
-            for(i=0;i<form.length;i++){
-                if(form.elements[i].value==""){
-                alert("You left something blank!");
+            if (document.getElementById("textarea").value == "")
+            {
+                alert("You must enter somthing!");
                 return false;
-                }
             }
         }
 

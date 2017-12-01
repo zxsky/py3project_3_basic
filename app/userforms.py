@@ -35,30 +35,6 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 
-#database related functions
-# def setup_DB():
-#     return pymysql.connect(host=db_config['host'],
-#                port=3306,
-#                user=db_config['user'],
-#                password=db_config['password'],
-#                db=db_config['database'])
-#
-# def connect_DB():
-#     db = getattr(g, '_database', None)
-#     if db is None:
-#         db = g._database = setup_DB()
-#     return db
-#
-#
-# #close the database when the website is closed
-# @webapp.teardown_appcontext
-# def close_DB(exception):
-#     db = getattr(g, '_database', None)
-#     if db is not None:
-#         if db.open:
-#             db.close()
-
-
 def login_required(func):
     @wraps(func)
     def wrap(*args, **kwargs):
@@ -71,10 +47,6 @@ def login_required(func):
 
 #  Helper Function: Verify Identity
 def verify(username, password):
-    # cnx = connect_DB()
-    # cursor = cnx.cursor()
-    # query = '''SELECT * FROM user WHERE username = %s'''
-    # cursor.execute(query, (username,))
     table = dynamodb.Table('users')
     response = table.get_item(
         Key={
@@ -86,20 +58,10 @@ def verify(username, password):
     if 'Item' not in response:
         return -1 #User does not exist
     else:
-        #
-        # query = '''SELECT password FROM user WHERE username = %s'''
-        # cursor.execute(query, (username,))
-        # myenPassWord = cursor.fetchone()
         data = {}
         item = response['Item']
         data.update(item)
-        # print(type(data['Password']))
-        # if not data['Password']==password:
         if not check_password_hash(data['password'], password):
-            # query = '''SELECT * FROM user WHERE username = %s AND password = %s'''
-            # cursor.execute(query, (username, password))
-            # if cursor.fetchone() is None:
-            
             return 1 # Password doesn't match
         else:
             return 0
@@ -177,11 +139,11 @@ def register():
                 TableName=username+'_files',
                 KeySchema=[
                     {
-                        'AttributeName': 'user_date',
+                        'AttributeName': 'user_project',
                         'KeyType': 'HASH'  # Partition key
                     },
                     {
-                        'AttributeName': 'user_project',
+                        'AttributeName': 'user_date',
                         'KeyType': 'RANGE'  # Sort key
                     }
                 ],
@@ -192,6 +154,35 @@ def register():
                     },
                     {
                         'AttributeName': 'user_project',
+                        'AttributeType': 'S'
+                    },
+
+                ],
+                ProvisionedThroughput={
+                    'ReadCapacityUnits': 10,
+                    'WriteCapacityUnits': 10
+                }
+            )
+
+            createdtable = dynamodb.create_table(
+                TableName=username + '_comments',
+                KeySchema=[
+                    {
+                        'AttributeName': 'comment_project',
+                        'KeyType': 'HASH'  # Partition key
+                    },
+                    {
+                        'AttributeName': 'comment_time',
+                        'KeyType': 'RANGE'  # Sort key
+                    }
+                ],
+                AttributeDefinitions=[
+                    {
+                        'AttributeName': 'comment_project',
+                        'AttributeType': 'S'
+                    },
+                    {
+                        'AttributeName': 'comment_time',
                         'AttributeType': 'S'
                     },
 

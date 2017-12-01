@@ -19,6 +19,20 @@ def check_date_name(date):
 def check_project_name(project):
     pass
 
+def get_comments(projectname, username):
+    fe = Key('comment_project').eq(projectname)
+    pe = "#dt, comment_time, comment_content, comment_user"
+    ean = {"#dt": "comment_project", }
+    table = dynamodb.Table(username + "_comments")
+    response = table.scan(
+        FilterExpression=fe,
+        ProjectionExpression=pe,
+        ExpressionAttributeNames=ean
+    )
+    records = []
+    for i in response['Items']:
+        records.append(i)
+    return records
 
 def get_parameters_when_view_project_page(username, project_chosen):
     date_list = get_date_list_accord_project(username, project_chosen)
@@ -357,7 +371,9 @@ def viewproject():
 
     share_flag, date_list, content_list= get_parameters_when_view_project_page(username, project_chosen)
 
-    return render_template("/list_project.html", project = project_chosen, date_list = date_list, content_list = content_list, share_flag = share_flag)
+    comment_list = get_comments(project_chosen, username)
+
+    return render_template("/list_project.html", project = project_chosen, date_list = date_list, content_list = content_list, share_flag = share_flag , comment_list = comment_list)
 
 
 @webapp.route('/addproject', methods=['GET', 'POST'])

@@ -16,46 +16,130 @@
 
 
 {% block content %}
+<STYLE type="text/css">
+ body {
+     text-align: center;
+ }
+.modal {
+  width: 50%;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.h-scroll {
+    height: 70vh; /* %-height of the viewport */
+    overflow-y: scroll;
+}
+ </STYLE>
     <div class="row justify-content-center">
         <h1><b>{{ otherusername }}</b>'s project: <b>{{ project }} </b></h1>
     </div>
+
+
     <div class="row justify-content-center">
-        <div class="col-md-8">
-        {% if date_list %}
-            <ul class="list-group">
-            {% for i in range(date_list|length) %}
-            <li class="list-group-item" >
+        <div class="col-md-6">
 
-                <label>Date:</label>&nbsp;&nbsp;
-                <input  type="text" name="dateChosen" readonly="readonly" value="{{ date_list[i] }}"/>
-                <a class="btn btn-sm btn-default" data-toggle="collapse" href="#collapseExample{{ i }}" aria-expanded="false" aria-controls="collapseExample">Preview</a>
-                &nbsp;&nbsp;&nbsp;&nbsp;
+{#            <div class="row justify-content-center">#}
+{#                <div class="col-md-6">#}
+                {% if date_list %}
+                    <div class="h-scroll">
+                    <ul class="list-group">
+                    {% for i in range(date_list|length) %}
+                    <li class="list-group-item" >
+                        <label>Date:</label>&nbsp;&nbsp;
+                        <input  type="text" name="dateChosen" readonly="readonly" value="{{ date_list[i] }}"/>
+                        <a class="btn btn-sm btn-default" data-toggle="collapse" href="#collapseExample{{ i }}" aria-expanded="false" aria-controls="collapseExample">Preview</a>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <div class="collapse show" style="height: 100px;" id="collapseExample{{ i }}">
+                        <textarea readonly style="width: 100%;">{{ content_list[i] }}</textarea>
+                        </div>
+                    </li>
+                    {% endfor %}
+                    </ul>
+                    </div>
+                {% else %}
+                    <p class="lead">The owner have not written anything here.</p>
+                {% endif %}
 
-                <div class="collapse show" style="height: 100px;" id="collapseExample{{ i }}">
-
-                <textarea readonly style="width: 100%;">{{ content_list[i] }}</textarea>
-{#                <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">#}
-{#                <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>#}
-{#                <textarea id="demo{{ i }}" name="textarea" ></textarea>#}
-{#                <script>#}
-{#                    const simplemde = new SimpleMDE({#}
-{#                        element: document.getElementById("demo{{ i }}"),#}
-{#                        spellChecker: false,#}
-{#                        initialValue: "{% if content_list[i] %}{{ content_list[i] }}{% else %}You have not written anything yet...{% endif %}",#}
-{#                        toolbar: false,#}
-{#                        status: false,#}
-{#                        placeholder: "You have not written anything yet...",#}
-{#                    });#}
-{#                    simplemde.togglePreview();#}
-{#                </script>#}
-                </div>
-
-            </li>
-            {% endfor %}
-            </ul>
-        {% else %}
-            <p class="lead">The owner have not written anything here.</p>
-        {% endif %}
         </div>
+         <div class="col-md-6">
+             <button type="button" class="btn btn-default btn-md" data-toggle="modal" data-target="#createProjModal">
+                Add comment
+            </button>
+         <br>
+
+            <div class="modal fade" id="createProjModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Add your comment:</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                    <form action="{{ url_for('addComment')}}" onSubmit="return checkEmpty(form)" name="form">
+                        <div class="modal-body">
+                            <textarea type="text" name="newComment" class="form-control" rows="10" id="commenttext"></textarea>
+                            <input
+                            value="{{ otherusername }}"
+                           name='otheruser'
+                            readonly="readonly"
+                            type="hidden"
+                            >
+                            <input
+                            value="{{ project }}"
+                           name='otherproject'
+                            readonly="readonly"
+                            type="hidden"
+                            >
+                        </div>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-md btn-secondary" data-dismiss="modal">Cancel</button>
+                            <input type="submit" class="btn btn-md btn-default" value="Add"/>
+                        </div>
+                    </form>
+                    </div>
+                </div>
+            </div>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+            <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+
+
+             {% if comment_list %}
+                 <div class="h-scroll">
+                 <table class="table table-striped table-hover">
+                 <tbody>
+                 {% for i in range(comment_list|length) %}
+                    <tr>
+                        <th scope="row">{{ i + 1 }}</th>
+                        <td >name:
+                                {% if comment_list[i]['comment_user'] == otherusername%}
+                                    <b><i>{{ comment_list[i]['comment_user'] }} (owner)</i></b>
+                                {% else %}
+                                    <i>{{ comment_list[i]['comment_user'] }}</i>
+                                {% endif %}<br>
+                            time: <i>{{ comment_list[i]['comment_time'] }}</i><br>
+                            <textarea>{{ comment_list[i]['comment_content'] }}</textarea>
+                        </td>
+                    </tr>
+
+                 {% endfor %}
+                 </tbody>
+                 </table>
+                 </div>
+             {% else %}
+                <h3><i>No comments yet.</i></h3>
+             {% endif %}
+
+         </div>
     </div>
+
+<script type="text/javascript">
+    function checkEmpty(form){
+        if (document.getElementById("commenttext").value == "")
+        {
+            alert("You must enter somthing!");
+            return false;
+        }
+    }
+
+</script>
 {% endblock %}
