@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block header %}
+    <div class="masthead clearfix">
+    <div class="inner">
+      <h5 class="masthead-brand">ECE1779-Assignment3 Your searched projects related to <b>{{ project_chosen }}</b></h5>
+      <nav>
+        <ul class="nav masthead-nav">
+            <li class="active"><a href="{{ url_for('profile',username = session['username']) }}">Back to homepage</a></li>
+            <li class="active"><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+      </nav>
+    </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+{#    <div class="row justify-content-center">#}
+        <div class="col-md-12">
+            {% if outcome %}
+            <ul class="list-group">
+                {% for key, value in outcome.items() %}
+                {% for valueitem in value %}
+                    <li class="list-group-item">
+                        <form  action="{{ url_for('viewprojects_notowner')}}"  name="form">
+                            <label>Owner:</label>&nbsp;&nbsp;
+                            <input name="otheruser" readonly="readonly" value="{{ key }}"/>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <label>Project Name:</label>&nbsp;&nbsp;
+                            <input name="otherproject" readonly="readonly" value="{{ valueitem }}"/>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="submit" class="btn btn-sm btn-default" value="View" id="savebutton"/>
+                        </form>
+                    </li>
+                {% endfor %}
+                {% endfor %}
+            </ul>
+            {% else %}
+            <h1>Sorry, no result</h1>
+            {% endif %}
+        </div>
+{#    </div>#}
+{% endblock %}

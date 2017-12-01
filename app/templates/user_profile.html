@@ -6,6 +6,15 @@
         <h5 class="masthead-brand">ECE1779-Assignment3 <b>{{session['username']}}</b>'s Homepage</h5>
         <nav>
             <ul class="nav masthead-nav">
+                <li class="active">
+                    <form action="{{ url_for('searchProject')}}">
+                        <div class="input-group ">
+                        <input type="text" name="projectToSearch" class="form-control">&nbsp;&nbsp;&nbsp;&nbsp;
+                        <input type="submit" class="btn btn-sm" value="Find Public Projects"/>
+                        </div>
+                    </form>
+                </li>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <li class="active"><a href="{{ url_for('logout') }}">Logout</a></li>
             </ul>
         </nav>
@@ -28,9 +37,10 @@
                     const simplemde = new SimpleMDE({
                         element: document.getElementById("demo1"),
                         spellChecker: false,
-                        initialValue: "{% if OLDtextarea %}{{ OLDtextarea }}{% endif %}",
+                        initialValue: "{% if OLDtextarea %}{{ OLDtextarea }}{% else %}You have not written anything yet...{% endif %}",
                         toolbar: false,
-                        status: false
+                        status: false,
+                        placeholder: "You have not written anything yet...",
                     });
                     simplemde.togglePreview();
                 </script>

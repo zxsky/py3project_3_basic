@@ -3,10 +3,6 @@ from flask import request, render_template, redirect, url_for, flash, g, session
 from app import webapp
 from app.userforms import login_required, logout
 
-# from werkzeug.utils import secure_filename
-
-import os
-import shutil
 import time, datetime
 from random import choice
 
@@ -14,8 +10,6 @@ import boto3
 from boto3.dynamodb.conditions import Key, Attr
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-
-ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def check_date_name(date):
@@ -25,10 +19,47 @@ def check_date_name(date):
 def check_project_name(project):
     pass
 
+
+def get_parameters_when_view_project_page(username, project_chosen):
+    date_list = get_date_list_accord_project(username, project_chosen)
+    content_list = []
+    for date_chosen in date_list:
+        table = dynamodb.Table(username + "_files")
+        response = table.query(
+            KeyConditionExpression=Key('user_date').eq(date_chosen) & Key('user_project').eq(project_chosen)
+        )
+        records = []
+        for i in response['Items']:
+            records.append(i)
+        if records:
+            # retrive the textarea since file do exist
+            s3 = boto3.resource('s3')
+            obj = s3.Object('mybucket4test', username + "/" + project_chosen + "/" + records[0]['project_filename'])
+            textareaOns3 = obj.get()['Body'].read().decode('utf-8')
+            content_list.append(textareaOns3)
+
+    share_flag = check_if_share(username, project_chosen)
+    return share_flag, date_list,content_list
+
 def random_num():
     millis = int(round(time.time() * 1000000))
     return millis
 
+def check_if_share(username, project_chosen):
+    table = dynamodb.Table('users')
+    response = table.get_item(
+        Key={
+            'username': username
+        }
+    )
+    data = {}
+    item = response['Item']
+    data.update(item)
+    project_share_list = data["project_share"]
+    if project_chosen in project_share_list:
+        return True
+    else:
+        return False
 
 def get_project_list(username):
     table = dynamodb.Table('users')
@@ -41,6 +72,19 @@ def get_project_list(username):
     item = response['Item']
     data.update(item)
     project_list = data["project_list"]
+    return project_list
+
+def get_shared_project_list(username):
+    table = dynamodb.Table('users')
+    response = table.get_item(
+        Key={
+            'username': username
+        }
+    )
+    data = {}
+    item = response['Item']
+    data.update(item)
+    project_list = data["project_share"]
     return project_list
 
 def get_date_list(username):
@@ -144,25 +188,6 @@ def profile(username):
                                date_list=date_whole_list, project_list = project_whole_list)
 
 
-# @webapp.route('/edit', methods=['GET', 'POST'])
-# @login_required
-# def edit():
-#     username = session['username']
-#     project_list = get_project_list(username)
-#     return render_template("/editMdFile.html", project_list = project_list)
-
-
-# @webapp.route('/choose_before_editing', methods=['GET', 'POST'])
-# @login_required
-# def choose_before_editing():
-#     username = session['username']
-#     project_list = get_project_list(username)
-#     if project_list == []:
-#         flash("You don't have any project yet, create one first!", "warning")
-#         return redirect(url_for('profile', username=username))
-#     return render_template("/editMdFile_choose.html", project_list = project_list)
-
-
 @webapp.route('/editFile', methods=['GET', 'POST'])
 @login_required
 def checkExist():
@@ -183,7 +208,6 @@ def checkExist():
         return redirect(url_for('profile', username=username))
 
     #check if user typed the wrong project intentionally
-    #todo
     if project_chosen not in project_list:
         return render_template("404_error.html")
 
@@ -207,10 +231,6 @@ def checkExist():
         return render_template("/editMdFile.html", OLDtextarea = textareaOns3, project_name = project_chosen, project_date = date_chosen)
     else:
         #file do not exist, check textarea is not null
-        # textarea = request.args.get('textarea')
-        # if textarea == "":
-        # date_chosen.replace('_', '\/')
-        # print(date_chosen)
         flash("No record. Start editing!", "success")
         return render_template("/editMdFile.html", project_name=project_chosen,  project_date = date_chosen)
 
@@ -335,35 +355,9 @@ def viewproject():
     if project_chosen not in get_project_list(username):
         return redirect(url_for('profile', username=session['username']))
 
-    date_list = get_date_list_accord_project(username, project_chosen)
-    # if date_list == []:
-    #     flash("You have not written anything related to " + project_chosen +" project","warning")
-    #     return redirect(url_for('profile', username=session['username']))
-    content_list = []
-    for date_chosen in date_list:
-        table = dynamodb.Table(username + "_files")
-        response = table.query(
-            KeyConditionExpression=Key('user_date').eq(date_chosen) & Key('user_project').eq(project_chosen)
-        )
-        records = []
-        for i in response['Items']:
-            records.append(i)
-        if records:
-            # retrive the textarea since file do exist
-            s3 = boto3.resource('s3')
-            obj = s3.Object('mybucket4test', username + "/" + project_chosen + "/" + records[0]['project_filename'])
-            textareaOns3 = obj.get()['Body'].read().decode('utf-8')
-            content_list.append(textareaOns3)
+    share_flag, date_list, content_list= get_parameters_when_view_project_page(username, project_chosen)
 
-    return render_template("/list_project.html", project = project_chosen, date_list = date_list, content_list = content_list)
-
-
-# @webapp.route('/updatework', methods=['GET', 'POST'])
-# @login_required
-# def updatework():
-#
-#     flash("Your MarkDown file has been saved successfully", "success")
-#     return redirect(url_for('profile', username=session['username']))
+    return render_template("/list_project.html", project = project_chosen, date_list = date_list, content_list = content_list, share_flag = share_flag)
 
 
 @webapp.route('/addproject', methods=['GET', 'POST'])
@@ -373,6 +367,10 @@ def addproject():
     username = session['username']
     if project_chosen == "":
         flash("Please enter a valid new project name!", "warning")
+        return redirect(url_for('profile', username=username))
+
+    if " " in project_chosen:
+        flash("Please do not use space when create the name!", "warning")
         return redirect(url_for('profile', username=username))
 
     #check if projectname exists
@@ -425,6 +423,23 @@ def deleteproject():
     if project_chosen == "":
         flash("Please select one first before delete project", "warning")
         return redirect(url_for('profile', username=username))
+
+    #delete from shared list if it is shared
+    shared_list = get_shared_project_list(username)
+    if project_chosen in shared_list:
+        sharedtable = dynamodb.Table('users')
+        shared_list.remove(project_chosen)
+        if shared_list is None:
+            shared_list = []
+        response = sharedtable.update_item(
+            Key={
+                'username': username
+            },
+            UpdateExpression="SET project_share = :r",
+            ExpressionAttributeValues={
+                ':r': shared_list
+            }
+        )
 
     #remvoe db project record
     date_list = get_date_list_accord_project(username, project_chosen)

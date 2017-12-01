@@ -165,9 +165,10 @@ def register():
                 Key={
                     'username': username
                 },
-                UpdateExpression="set project_list = :r",
+                UpdateExpression="set project_list = :r, project_share = :p",
                 ExpressionAttributeValues={
-                    ':r': []
+                    ':r': [],
+                    ':p': []
                 }
 
             )

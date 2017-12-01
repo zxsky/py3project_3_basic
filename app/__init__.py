@@ -8,3 +8,5 @@ webapp.config['S3ID'] = 'tests3yong'
 from app import views
 from app import userforms
 from app import userpage
+
+from app import usershare

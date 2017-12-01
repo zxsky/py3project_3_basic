@@ -3,7 +3,7 @@
 {% block header %}
     <div class="masthead clearfix">
     <div class="inner">
-      <h5 class="masthead-brand">ECE1779-Assignment3 <b>{{session['username']}}</b>'s work related to <b>{{ project }}</b></h5>
+      <h5 class="masthead-brand">ECE1779-Assignment3 <b>{{session['username']}}</b>'s work related to <b>{{ project }} {% if share_flag %}(public){% else %}(private){% endif %}</b></h5>
       <nav>
         <ul class="nav masthead-nav">
             <li class="active"><a href="{{ url_for('profile',username = session['username']) }}">Back to homepage</a></li>
@@ -26,6 +26,28 @@
             >
             <input type="submit" class="btn btn-lg btn-danger" value="Delete this project: {{ project }}"/>
         </form>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    {% if share_flag  %}
+        <form action="{{ url_for('donotshareproject')}}">
+            <input
+            value="{{ project }}"
+           name='projectToShare'
+            readonly="readonly"
+            type="hidden"
+            >
+            <input type="submit" class="btn btn-lg btn-warning" value="Not Share this project: {{ project }}"/>
+        </form>
+    {% else %}
+        <form action="{{ url_for('shareproject')}}">
+            <input
+            value="{{ project }}"
+           name='projectToShare'
+            readonly="readonly"
+            type="hidden"
+            >
+            <input type="submit" class="btn btn-lg btn-success" value="Share this project: {{ project }}"/>
+        </form>
+    {% endif %}
     </div>
 
 

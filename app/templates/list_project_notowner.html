@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block header %}
+    <div class="masthead clearfix" xmlns="http://www.w3.org/1999/html">
+    <div class="inner">
+      <h5 class="masthead-brand">ECE1779-Assignment3 Your search result</h5>
+      <nav>
+        <ul class="nav masthead-nav">
+            <li class="active"><a href="{{ url_for('profile',username = session['username']) }}">Back to homepage</a></li>
+            <li class="active"><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+      </nav>
+    </div>
+    </div>
+{% endblock %}
+
+
+{% block content %}
+    <div class="row justify-content-center">
+        <h1><b>{{ otherusername }}</b>'s project: <b>{{ project }} </b></h1>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+        {% if date_list %}
+            <ul class="list-group">
+            {% for i in range(date_list|length) %}
+            <li class="list-group-item" >
+
+                <label>Date:</label>&nbsp;&nbsp;
+                <input  type="text" name="dateChosen" readonly="readonly" value="{{ date_list[i] }}"/>
+                <a class="btn btn-sm btn-default" data-toggle="collapse" href="#collapseExample{{ i }}" aria-expanded="false" aria-controls="collapseExample">Preview</a>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+
+                <div class="collapse show" style="height: 100px;" id="collapseExample{{ i }}">
+
+                <textarea readonly style="width: 100%;">{{ content_list[i] }}</textarea>
+{#                <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">#}
+{#                <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>#}
+{#                <textarea id="demo{{ i }}" name="textarea" ></textarea>#}
+{#                <script>#}
+{#                    const simplemde = new SimpleMDE({#}
+{#                        element: document.getElementById("demo{{ i }}"),#}
+{#                        spellChecker: false,#}
+{#                        initialValue: "{% if content_list[i] %}{{ content_list[i] }}{% else %}You have not written anything yet...{% endif %}",#}
+{#                        toolbar: false,#}
+{#                        status: false,#}
+{#                        placeholder: "You have not written anything yet...",#}
+{#                    });#}
+{#                    simplemde.togglePreview();#}
+{#                </script>#}
+                </div>
+
+            </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p class="lead">The owner have not written anything here.</p>
+        {% endif %}
+        </div>
+    </div>
+{% endblock %}
