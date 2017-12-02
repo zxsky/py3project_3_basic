@@ -119,12 +119,12 @@
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">Add your response:</h5>
+                                <h5 class="modal-title" id="exampleModalLabel">Add your response: (<=255)</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                             </div>
-                        <form action="{{ url_for('addComment')}}" onSubmit="return checkEmpty(form)" name="form">
+                        <form action="{{ url_for('addCommentSelf')}}" onSubmit="return checkEmpty(form)" name="form">
                             <div class="modal-body">
-                                <textarea type="text" name="newComment" class="form-control" rows="10" id="commenttext"></textarea>
+                                <textarea  maxlength="255" type="text" name="newComment" class="form-control" rows="10" id="commenttext"></textarea>
                                 <input
                                 value="{{ session['username'] }}"
                                name='otheruser'
@@ -164,7 +164,7 @@
                                         <i>{{ comment_list[i]['comment_user'] }}</i>
                                     {% endif %}<br>
                                 time: <i>{{ comment_list[i]['comment_time'] }}</i><br>
-                                <textarea>{{ comment_list[i]['comment_content'] }}</textarea>
+                                <textarea readonly>{{ comment_list[i]['comment_content'] }}</textarea>
                             </td>
                         </tr>
 

@@ -2,157 +2,16 @@ from flask import request, render_template, redirect, url_for, flash, g, session
 
 from app import webapp
 from app.userforms import login_required, logout
+from app.utils import get_date_list, get_project_list, get_date_list_accord_project,\
+    get_project_list_accord_date, random_num, get_comments, get_parameters_when_view_project_page,\
+    get_shared_project_list
 
-import time, datetime
 from random import choice
 
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-
-
-def check_date_name(date):
-    pass
-
-
-def check_project_name(project):
-    pass
-
-def get_comments(projectname, username):
-    fe = Key('comment_project').eq(projectname)
-    pe = "#dt, comment_time, comment_content, comment_user"
-    ean = {"#dt": "comment_project", }
-    table = dynamodb.Table(username + "_comments")
-    response = table.scan(
-        FilterExpression=fe,
-        ProjectionExpression=pe,
-        ExpressionAttributeNames=ean
-    )
-    records = []
-    for i in response['Items']:
-        records.append(i)
-    return records
-
-def get_parameters_when_view_project_page(username, project_chosen):
-    date_list = get_date_list_accord_project(username, project_chosen)
-    content_list = []
-    for date_chosen in date_list:
-        table = dynamodb.Table(username + "_files")
-        response = table.query(
-            KeyConditionExpression=Key('user_date').eq(date_chosen) & Key('user_project').eq(project_chosen)
-        )
-        records = []
-        for i in response['Items']:
-            records.append(i)
-        if records:
-            # retrive the textarea since file do exist
-            s3 = boto3.resource('s3')
-            obj = s3.Object('mybucket4test', username + "/" + project_chosen + "/" + records[0]['project_filename'])
-            textareaOns3 = obj.get()['Body'].read().decode('utf-8')
-            content_list.append(textareaOns3)
-
-    share_flag = check_if_share(username, project_chosen)
-    return share_flag, date_list,content_list
-
-def random_num():
-    millis = int(round(time.time() * 1000000))
-    return millis
-
-def check_if_share(username, project_chosen):
-    table = dynamodb.Table('users')
-    response = table.get_item(
-        Key={
-            'username': username
-        }
-    )
-    data = {}
-    item = response['Item']
-    data.update(item)
-    project_share_list = data["project_share"]
-    if project_chosen in project_share_list:
-        return True
-    else:
-        return False
-
-def get_project_list(username):
-    table = dynamodb.Table('users')
-    response = table.get_item(
-        Key={
-            'username': username
-        }
-    )
-    data = {}
-    item = response['Item']
-    data.update(item)
-    project_list = data["project_list"]
-    return project_list
-
-def get_shared_project_list(username):
-    table = dynamodb.Table('users')
-    response = table.get_item(
-        Key={
-            'username': username
-        }
-    )
-    data = {}
-    item = response['Item']
-    data.update(item)
-    project_list = data["project_share"]
-    return project_list
-
-def get_date_list(username):
-    pe = "#dt, user_project, project_filename"
-    ean = {"#dt": "user_date", }
-    table = dynamodb.Table(username + "_files")
-    response = table.scan(
-        ProjectionExpression=pe,
-        ExpressionAttributeNames=ean
-    )
-    records = []
-    for i in response['Items']:
-        records.append(i)
-    date_list = []
-    for i in range(len(records)):
-        i_date = records[i]['user_date']
-        if i_date not in date_list:
-            date_list.append(i_date)
-    return date_list
-
-def get_date_list_accord_project(username, project_chosen):
-    pe = "#dt, user_project, project_filename"
-    ean = {"#dt": "user_date", }
-    table = dynamodb.Table(username + "_files")
-    response = table.scan(
-        ProjectionExpression=pe,
-        ExpressionAttributeNames=ean
-    )
-    records = []
-    for i in response['Items']:
-        records.append(i)
-    date_list = []
-    for i in range(len(records)):
-        if records[i]['user_project'] == project_chosen:
-            date_list.append(records[i]['user_date'])
-    return date_list
-
-def get_project_list_accord_date(username, date_chosen):
-    pe = "user_date, #pj, project_filename"
-    ean = {"#pj": "user_project", }
-    table = dynamodb.Table(username + "_files")
-    response = table.scan(
-        ProjectionExpression=pe,
-        ExpressionAttributeNames=ean
-    )
-    records = []
-    for i in response['Items']:
-        records.append(i)
-    project_list = []
-    for i in range(len(records)):
-        if records[i]['user_date'] == date_chosen:
-            project_list.append(records[i]['user_project'])
-    return project_list
-
 
 
 @webapp.route('/userpage/<username>', methods=['GET'])
@@ -165,13 +24,23 @@ def profile(username):
 
     #search all the projects and dates
     project_whole_list = get_project_list(username)
-    date_whole_list = get_date_list(username)
+    date_whole_list_bug = get_date_list(username)
+
+    #a stupid bug caused by the datepicker itself
+    date_whole_list = []
+    for date in date_whole_list_bug:
+        if date[3] == '0':
+            date = date[0:3] + date[4:]
+        if date[0] == '0':
+            date = date[1:]
+        date_whole_list.append(date)
 
     #diaplay a random project's latest work
     if project_whole_list != []:
         project_chosen = choice(project_whole_list)
         # textareaOns3 = ""
         date_list = get_date_list_accord_project(username, project_chosen)
+
         if date_list != []:
             date_chosen = choice(date_list)
             table = dynamodb.Table(username + "_files")
@@ -456,6 +325,24 @@ def deleteproject():
                 ':r': shared_list
             }
         )
+
+    #delete comments
+    comment_list = get_comments(project_chosen, username)
+    if comment_list != []:
+        dynamodb_client = boto3.client('dynamodb', region_name='us-east-1')
+        for i in range(len(comment_list)):
+            response = dynamodb_client.delete_item(
+                Key={
+                    'comment_project': {
+                        'S': project_chosen,
+                    },
+                    'comment_time': {
+                        'S': comment_list[i]['comment_time'],
+                    },
+                },
+                TableName=username + "_comments",
+            )
+
 
     #remvoe db project record
     date_list = get_date_list_accord_project(username, project_chosen)

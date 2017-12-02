@@ -1,65 +1,14 @@
 from flask import request, render_template, redirect, url_for, flash, session
 from app import webapp
-from app.userforms import login_required, logout
-from app.userpage import get_date_list, get_project_list, \
-    get_project_list_accord_date, get_date_list_accord_project, \
-    check_if_share, get_parameters_when_view_project_page, get_shared_project_list
+from app.userforms import login_required
+from app.utils import get_comments, get_all_public_projects, get_project_list,\
+    get_date_list_accord_project, get_shared_project_list, get_parameters_when_view_project_page,\
+    fuzzyfinder, get_all_users
 
 import boto3
-from boto3.dynamodb.conditions import Key, Attr
-import re
 from datetime import datetime
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-
-
-def fuzzyfinder(user_input, collection):
-    suggestions = []
-    pattern = '.*?'.join(user_input)  # Converts 'djm' to 'd.*?j.*?m'
-    regex = re.compile(pattern)  # Compiles a regex.
-    for item in collection:
-        match = regex.search(item)  # Checks if the current item matches the regex.
-        if match:
-            suggestions.append((len(match.group()), match.start(), item))
-    return [x for _, _, x in sorted(suggestions)]
-
-
-def get_all_public_projects():
-    table = dynamodb.Table('users')
-    response = table.scan()
-    item = response['Items']
-
-    all_public_projects = {}
-    for i in range(response['Count']):
-        if 'project_share' in item[i]:
-            if item[i]['project_share']!= []:
-                all_public_projects.update({item[i]['username']:item[i]['project_share']})
-    return all_public_projects
-
-def get_all_users():
-    table = dynamodb.Table('users')
-    response = table.scan()
-    item = response['Items']
-
-    all_users = []
-    for i in range(response['Count']):
-        all_users.append(item[i]['username'])
-    return all_users
-
-def get_comments(projectname, username):
-    fe = Key('comment_project').eq(projectname)
-    pe = "#dt, comment_time, comment_content, comment_user"
-    ean = {"#dt": "comment_project", }
-    table = dynamodb.Table(username + "_comments")
-    response = table.scan(
-        FilterExpression=fe,
-        ProjectionExpression=pe,
-        ExpressionAttributeNames=ean
-    )
-    records = []
-    for i in response['Items']:
-        records.append(i)
-    return records
 
 
 @webapp.route('/shareproject', methods=['GET', 'POST'])
@@ -99,7 +48,7 @@ def shareproject():
         )
 
         # same as viewproject function.
-        share_flag, date_list, content_list = get_parameters_when_view_project_page(username, project_chosen)
+        # share_flag, date_list, content_list = get_parameters_when_view_project_page(username, project_chosen)
 
         flash("You shared this project \"" + project_chosen +"\"", "success")
         return redirect(url_for('viewproject') + "?projectChosen=" + project_chosen)
@@ -143,7 +92,7 @@ def donotshareproject():
             }
         )
 
-        share_flag, date_list, content_list = get_parameters_when_view_project_page(username, project_chosen)
+        # share_flag, date_list, content_list = get_parameters_when_view_project_page(username, project_chosen)
 
         flash("You make the project \"" + project_chosen +"\"private now", "success")
         # return render_template("/list_project.html", project=project_chosen, date_list=date_list,
@@ -160,6 +109,7 @@ def searchProject():
     if project_chosen == "":
         return redirect(url_for('profile', username=username))
 
+    #search only one word
     if " " in project_chosen:
         flash("Please search one word for better results, since all project names are one word.", "warning")
         return redirect(url_for('profile', username=username))
@@ -170,9 +120,13 @@ def searchProject():
     #fuzzy find
     matched_projects = {}
     for key, value in all_users_public_projects.items():
+        if key.lower() == project_chosen.lower():
+            matched_projects.update({key:value})
+            continue
         matched_per_user = fuzzyfinder(project_chosen, value)
         if matched_per_user != []:
             matched_projects.update({key : matched_per_user})
+
 
     return render_template("/search_result.html", outcome = matched_projects, project_chosen = project_chosen)
 
@@ -207,9 +161,9 @@ def addComment():
     other_project = request.args.get('otherproject')
     username = session['username']
 
-    # comment_list = get_comments(other_project, other_username)
-    # print(comment_list)
-    # return
+    if len(comment_content)>255:
+        flash("Please make your comment less than 255 characters!", "warning")
+        return redirect( url_for('viewprojects_notowner') + "?otheruser=" + other_username + "&otherproject=" + other_project)
 
     # comment_time = strftime("%Y-%m-%d %H:%M:%S", gmtime())
     comment_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
@@ -224,8 +178,30 @@ def addComment():
         }
     )
 
-    # share_flag, date_list, content_list = get_parameters_when_view_project_page(other_username, other_project)
-    #
-    # comment_list = get_comments(other_project, other_username)
-
     return redirect( url_for('viewprojects_notowner') + "?otheruser=" + other_username + "&otherproject=" +other_project)
+
+@webapp.route('/addCommentSelf', methods=['GET', 'POST'])
+@login_required
+def addCommentSelf():
+    comment_content = request.args.get('newComment')
+    other_username = request.args.get('otheruser')
+    other_project = request.args.get('otherproject')
+    username = session['username']
+
+    if len(comment_content)>255:
+        flash("Please make your comment less than 255 characters!", "warning")
+        return redirect(url_for('viewproject') + "?projectChosen=" + other_project)
+
+    comment_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
+
+    table = dynamodb.Table(other_username + "_comments")
+    response = table.put_item(
+        Item={
+            'comment_project': other_project,
+            'comment_time': comment_time,
+            'comment_content' : comment_content,
+            'comment_user' : username
+        }
+    )
+
+    return redirect( url_for('viewproject') + "?projectChosen=" +other_project)
